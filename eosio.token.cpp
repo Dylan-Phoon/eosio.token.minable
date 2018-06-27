@@ -8,9 +8,41 @@
 namespace eosio {
 
 void token::create( account_name issuer,
-                    asset        maximum_supply )
+                    asset        maximum_supply,
+                    string       nonce )
 {
     require_auth( _self );
+
+    //digest of previous hash
+    //TODO: Implement some sort of randomness to prevent premine attacks
+    /*checksum256 result;
+    char *a;
+    a = "dx";*/
+
+    int hash_size = 64;
+
+    //sizeof nonce + buffer
+    /*char buffer[sizeof(nonce)+hash_size];
+    //sets the buffer to be hashed
+    for (int i = 0; i < sizeof(buffer); ++i) {
+      if (i >= hash_size) {
+        buffer[i] = nonce[i-hash_size];
+        continue;
+      }
+      buffer[i] = a[i];
+    }*/
+    checksum256 result;
+    char *a;
+    a = "dx";
+    sha256( (char *)&a, sizeof(a), &result);
+
+    checksum256 result2;
+    char *a2;
+    a2 = "dx";
+    sha256( (char *)&a2, sizeof(a2), &result2);
+
+    int n;
+    n=memcmp ( &result, &result2, sizeof(result) );
 
     auto sym = maximum_supply.symbol;
     eosio_assert( sym.is_valid(), "invalid symbol name" );
@@ -25,6 +57,15 @@ void token::create( account_name issuer,
        s.supply.symbol = maximum_supply.symbol;
        s.max_supply    = maximum_supply;
        s.issuer        = issuer;
+       s.ihash = result;
+       s.ihash1 = result2;
+        if (n > 0) {
+          s.greater = '1';
+        } else if ( n < 0) {
+          s.greater = '2';
+        } else {
+          s.greater = '0';
+        }
     });
 }
 
@@ -34,6 +75,7 @@ void token::issue( account_name to, asset quantity, string memo )
     auto sym = quantity.symbol;
     eosio_assert( sym.is_valid(), "invalid symbol name" );
     eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
+
 
     auto sym_name = sym.name();
     stats statstable( _self, sym_name );
@@ -48,11 +90,11 @@ void token::issue( account_name to, asset quantity, string memo )
     eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
     eosio_assert( quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
 
+
     statstable.modify( st, 0, [&]( auto& s ) {
        s.supply += quantity;
     });
 
-    add_balance( st.issuer, quantity, st.issuer );
 
     if( to != st.issuer ) {
        SEND_INLINE_ACTION( *this, transfer, {st.issuer,N(active)}, {st.issuer, to, quantity, memo} );

@@ -18,7 +18,8 @@
      "base": "",
      "fields": [
         {"name":"issuer", "type":"account_name"},
-        {"name":"maximum_supply", "type":"asset"}
+        {"name":"maximum_supply", "type":"asset"},
+        {"name":"nonce", "type":"string"}
      ]
   },{
      "name": "issue",
@@ -40,7 +41,10 @@
       "fields": [
         {"name":"supply", "type":"asset"},
         {"name":"max_supply", "type":"asset"},
-        {"name":"issuer", "type":"account_name"}
+        {"name":"issuer", "type":"account_name"},
+        {"name":"ihash", "type":"checksum256"},
+        {"name":"ihash1", "type":"checksum256"},
+        {"name":"greater", "type":"string"}
       ]
     }
   ],
