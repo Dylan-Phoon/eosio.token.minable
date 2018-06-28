@@ -7,42 +7,54 @@
 
 namespace eosio {
 
-void token::create( account_name issuer,
-                    asset        maximum_supply,
-                    string       nonce )
+void token::mine( string        nonce,
+                  asset         target_token, 
+                  account_name  miner )
 {
-    require_auth( _self );
+    require_auth( miner );
 
-    //digest of previous hash
-    //TODO: Implement some sort of randomness to prevent premine attacks
-    /*checksum256 result;
-    char *a;
-    a = "dx";*/
+    eosio_assert( is_account( miner ), "to account does not exist");
+    auto sym = target_token.symbol.name();
+    stats statstable( _self, sym );
+    const auto& st = statstable.get( sym );
 
-    int hash_size = 64;
+    eosio_assert( target_token.symbol == st.supply.symbol, "symbol precision mismatch" );
+
+    uint128_t difficulty = st.difficulty;
+
+    uint8_t difficulty_array[64];
+    for (int i = 64; i >= 0; i--) {
+        difficulty_array[i] = difficulty % 100;
+        difficulty /= 100;
+    }
 
     //sizeof nonce + buffer
-    /*char buffer[sizeof(nonce)+hash_size];
-    //sets the buffer to be hashed
+    char buffer[sizeof(nonce)+hash_size];
+    //sets the buffer + nonce to be hashed
     for (int i = 0; i < sizeof(buffer); ++i) {
       if (i >= hash_size) {
         buffer[i] = nonce[i-hash_size];
         continue;
       }
       buffer[i] = a[i];
-    }*/
+    }
+
+    //Hashes the buffer and stores it in the result
     checksum256 result;
-    char *a;
-    a = "dx";
-    sha256( (char *)&a, sizeof(a), &result);
+    sha256( (char *)&buffer, sizeof(buffer), &result);
+    
+    //if n < 0 then the hash is valid
+    //memcmp compares the hash of the buffer to the difficulty
+    int n = 0;
+    n = memcmp ( &buffer, &difficulty, sizeof(result) );
+    eosio_assert(n < 0, "Invalid nonce!");
+    add_balance(miner, "100 EOS", miner);    
+}
 
-    checksum256 result2;
-    char *a2;
-    a2 = "dx";
-    sha256( (char *)&a2, sizeof(a2), &result2);
-
-    int n;
-    n=memcmp ( &result, &result2, sizeof(result) );
+void token::create( account_name issuer,
+                    asset        maximum_supply )
+{
+    require_auth( _self );
 
     auto sym = maximum_supply.symbol;
     eosio_assert( sym.is_valid(), "invalid symbol name" );

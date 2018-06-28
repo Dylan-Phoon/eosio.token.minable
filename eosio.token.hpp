@@ -5,7 +5,6 @@
 #pragma once
 
 #include <iostream>
-#include <boost/multiprecision/cpp_int.hpp>
 #include <eosiolib/asset.hpp>
 #include <eosiolib/print.hpp>
 #include <utility>
@@ -29,8 +28,7 @@ namespace eosio {
          token( account_name self ):contract(self){}
          //@abi action
          void create( account_name issuer,
-                      asset        maximum_supply,
-                      string       nonce  );
+                      asset        maximum_supply );
          //@abi action
          void issue( account_name to, asset quantity, string memo );
          //@abi action
@@ -38,6 +36,9 @@ namespace eosio {
                         account_name to,
                         asset        quantity,
                         string       memo );
+
+         void mine ( 	string 			nonce, 
+         				account_name 	miner );
       
       
          inline asset get_supply( symbol_name sym )const;
@@ -52,12 +53,10 @@ namespace eosio {
          };
 
          struct currency_stats {
-            asset          supply;
-            asset          max_supply;
-            account_name   issuer;
-            checksum256    ihash;
-            checksum256    ihash1;
-            string           greater;
+            asset          	supply;
+            asset          	max_supply;
+            account_name   	issuer;
+            uint128_t		difficulty = 0xffffff;
             uint64_t primary_key()const { return supply.symbol.name(); }
          };
 
