@@ -29,7 +29,15 @@
         {"name":"quantity", "type":"asset"},
         {"name":"memo", "type":"string"}
      ]
-  },{
+  }, {
+      "name":"mine",
+      "base":"",
+      "fields": [
+        {"name":"nonce", "type":"string"},
+        {"name":"target_token", "type":"asset"},
+        {"name":"miner", "type":"account_name"}
+      ]
+  }, {
       "name": "account",
       "base": "",
       "fields": [
@@ -42,9 +50,6 @@
         {"name":"supply", "type":"asset"},
         {"name":"max_supply", "type":"asset"},
         {"name":"issuer", "type":"account_name"},
-        {"name":"ihash", "type":"checksum256"},
-        {"name":"ihash1", "type":"checksum256"},
-        {"name":"greater", "type":"string"}
       ]
     }
   ],

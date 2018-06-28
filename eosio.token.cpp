@@ -51,7 +51,7 @@ void token::mine( string        nonce,
     int n = 0;
     n = memcmp ( &buffer, &difficulty, sizeof(result) );
     eosio_assert(n < 0, "Invalid nonce!");
-    add_balance(miner, "100 MINE", miner);    
+    //add_balance(miner, asset("100 MINE"), miner);    
 }
 
 void token::create( account_name issuer,
