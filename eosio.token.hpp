@@ -14,6 +14,8 @@
 #include <eosiolib/time.hpp>
 #include <eosiolib/contract.hpp>
 #include <eosiolib/crypto.h>
+#include <eosiolib/print.hpp>  
+ #include "../biginteger-for-eosio/BigIntegerLibrary.hpp" 
 
 namespace eosiosystem {
    class system_contract;
@@ -37,7 +39,8 @@ namespace eosio {
                         asset        quantity,
                         string       memo );
 
-         void mine ( 	string 			nonce, 
+         void mine ( 	string 			nonce,
+         				asset         	target_token,  
          				account_name 	miner );
       
       

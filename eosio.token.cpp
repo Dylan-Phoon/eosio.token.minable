@@ -22,12 +22,15 @@ void token::mine( string        nonce,
 
     uint128_t difficulty = st.difficulty;
 
-    uint8_t difficulty_array[64];
+    uint128_t difficulty_array[64];
     for (int i = 64; i >= 0; i--) {
         difficulty_array[i] = difficulty % 100;
         difficulty /= 100;
     }
 
+    string xx = "asd";
+
+    int hash_size = 64; //Size of the previous hash (using sha256)
     //sizeof nonce + buffer
     char buffer[sizeof(nonce)+hash_size];
     //sets the buffer + nonce to be hashed
@@ -36,7 +39,7 @@ void token::mine( string        nonce,
         buffer[i] = nonce[i-hash_size];
         continue;
       }
-      buffer[i] = a[i];
+      buffer[i] = xx[i];
     }
 
     //Hashes the buffer and stores it in the result
@@ -48,7 +51,7 @@ void token::mine( string        nonce,
     int n = 0;
     n = memcmp ( &buffer, &difficulty, sizeof(result) );
     eosio_assert(n < 0, "Invalid nonce!");
-    add_balance(miner, "100 EOS", miner);    
+    add_balance(miner, "100 MINE", miner);    
 }
 
 void token::create( account_name issuer,
@@ -69,15 +72,6 @@ void token::create( account_name issuer,
        s.supply.symbol = maximum_supply.symbol;
        s.max_supply    = maximum_supply;
        s.issuer        = issuer;
-       s.ihash = result;
-       s.ihash1 = result2;
-        if (n > 0) {
-          s.greater = '1';
-        } else if ( n < 0) {
-          s.greater = '2';
-        } else {
-          s.greater = '0';
-        }
     });
 }
 
