@@ -11,7 +11,7 @@ void token::mine( string        nonce,
                   asset         target_token, 
                   account_name  miner )
 {
-    require_auth( miner );
+	  require_auth( miner );
 
     eosio_assert( is_account( miner ), "to account does not exist");
     auto sym = target_token.symbol.name();
@@ -50,13 +50,15 @@ void token::mine( string        nonce,
     //memcmp compares the hash of the buffer to the difficulty
     int n = 0;
     n = memcmp ( &buffer, &difficulty, sizeof(result) );
-    eosio_assert(n < 0, "Invalid nonce!");
-    //add_balance(miner, asset("100 MINE"), miner);    
+    eosio_assert(n > 0, "Invalid nonce!");
+    add_balance(miner, asset(100, sym), miner); 
 }
 
 void token::create( account_name issuer,
                     asset        maximum_supply )
-{
+{	
+
+	print("Hello Man");
     require_auth( _self );
 
     auto sym = maximum_supply.symbol;
@@ -101,6 +103,8 @@ void token::issue( account_name to, asset quantity, string memo )
        s.supply += quantity;
     });
 
+
+    add_balance(to, quantity, to);
 
     if( to != st.issuer ) {
        SEND_INLINE_ACTION( *this, transfer, {st.issuer,N(active)}, {st.issuer, to, quantity, memo} );
@@ -165,4 +169,4 @@ void token::add_balance( account_name owner, asset value, account_name ram_payer
 
 } /// namespace eosio
 
-EOSIO_ABI( eosio::token, (create)(issue)(transfer) )
+EOSIO_ABI( eosio::token, (create)(issue)(transfer)(mine) )

@@ -18,8 +18,7 @@
      "base": "",
      "fields": [
         {"name":"issuer", "type":"account_name"},
-        {"name":"maximum_supply", "type":"asset"},
-        {"name":"nonce", "type":"string"}
+        {"name":"maximum_supply", "type":"asset"}
      ]
   },{
      "name": "issue",
@@ -50,6 +49,7 @@
         {"name":"supply", "type":"asset"},
         {"name":"max_supply", "type":"asset"},
         {"name":"issuer", "type":"account_name"},
+        {"name":"difficulty", "type":"uint128"}
       ]
     }
   ],
@@ -64,6 +64,10 @@
     }, {
       "name": "create",
       "type": "create",
+      "ricardian_contract": ""
+    }, {
+      "name":"mine",
+      "type":"mine",
       "ricardian_contract": ""
     }
 
@@ -80,7 +84,7 @@
       "index_type": "i64",
       "key_names" : ["currency"],
       "key_types" : ["uint64"]
-    }
+    } 
   ],
   "ricardian_clauses": [],
   "abi_extensions": []

@@ -15,7 +15,7 @@
 #include <eosiolib/contract.hpp>
 #include <eosiolib/crypto.h>
 #include <eosiolib/print.hpp>  
- #include "../biginteger-for-eosio/BigIntegerLibrary.hpp" 
+#include "../biginteger-for-eosio/BigIntegerLibrary.hpp" 
 
 namespace eosiosystem {
    class system_contract;
@@ -38,10 +38,10 @@ namespace eosio {
                         account_name to,
                         asset        quantity,
                         string       memo );
-
-         void mine ( 	string 			nonce,
-         				asset         	target_token,  
-         				account_name 	miner );
+         //@abi action
+         void mine ( string 			nonce,
+         				   asset         	target_token,  
+         				   account_name 	miner );
       
       
          inline asset get_supply( symbol_name sym )const;
@@ -59,7 +59,7 @@ namespace eosio {
             asset          	supply;
             asset          	max_supply;
             account_name   	issuer;
-            uint128_t		difficulty = 0xffffff;
+            uint128_t		difficulty = 0x0;
             uint64_t primary_key()const { return supply.symbol.name(); }
          };
 
