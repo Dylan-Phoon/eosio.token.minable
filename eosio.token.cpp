@@ -1,6 +1,8 @@
 /**
- *  @file
- *  @copyright defined in eos/LICENSE.txt
+ *  Copyright (c) 2018 Dylan Phoon
+ *  Copyright defined in eosio.token.minable/LICENSE.txt
+ *
+ *  Copyright defined in eos/LICENSE.txt
  */
 
 #include "eosio.token.hpp"
@@ -20,65 +22,107 @@ void token::mine( string        nonce,
 
     eosio_assert( target_token.symbol == st.supply.symbol, "symbol precision mismatch" );
 
-    uint128_t difficulty = st.difficulty;
 
-    uint32_t a = 4;
-    BigInteger ssd = a;
-    uint128_t difficulty_array[64];
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //    Sets `difficulty` to the difficulty that is
+    //    in the relative currency table, then splits
+    //    up the array into a larger array of 64 uint32
+    //    so that it can be compared to the guess digest.
+    //    Also stores the array in a single `BigInteger`
+    //    for arithmetic so that difficulty can be set
+
+    BigInteger difficulty;
+    BigInteger exponent = 1;
+    uint32_t difficulty_to_set[8];
+    for ( uint8_t i = 0; i < 8; ++i) {
+      difficulty_to_set[i] = st.difficulty[i];
+    }
+    for (int i = 0; i < 8; ++i) {
+      difficulty += (BigInteger)difficulty_to_set[i] * exponent;
+      exponent *= 1000;
+    }
+
+    BigInteger difficulty_array[64];
     for (int i = 64; i >= 0; i--) {
         difficulty_array[i] = difficulty % 100;
         difficulty /= 100;
     }
 
-    //get the previous hash and convert to string
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //    Get the previous hash in the relative 
+    //    currency table and combine it with the
+    //    guessed nonce into a single string
+
     string string_previous_hash;
     uint8_t previous_hash[64];
+    int previous_hash_size = 64;
+
     for (int i = 0; i < 64; ++i) {
       previous_hash[i] = st.previous_hash.hash[i];
     }
     for (uint8_t i : previous_hash) {
       string_previous_hash += std::to_string(i);
     }
-    int hash_size = 64; //Size of the previous hash (using sha256)
-    //sizeof nonce + buffer
-    char buffer[nonce.length()+hash_size];
-    //sets the buffer + nonce to be hashed
-    for (int i = 0; i < sizeof(buffer); ++i) {
-      if (i >= hash_size) {
-        buffer[i] = nonce[i-hash_size];
+
+    char digest[nonce.length()+previous_hash_size]; //The digest that will be hashed
+    for (int i = 0; i < sizeof(digest); ++i) {
+      if (i >= previous_hash_size) {
+        digest[i] = nonce[i-previous_hash_size];
         continue;
       }
-      buffer[i] = string_previous_hash[i];
+      digest[i] = string_previous_hash[i];
     }
-    print(nonce);
-    print(string_previous_hash[7]);
 
-    //Hashes the buffer and stores it in the result
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //    Hashes the digest (sha256) and stores it in result
+
     checksum256 result;
-    sha256( (char *)&buffer, sizeof(buffer), &result);
+    sha256( (char *)&digest, sizeof(digest), &result);
     
-    //if n < 0 then the hash is valid
-    //memcmp compares the hash of the buffer to the difficulty
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //    Compare the resulting hash generated from the 
+    //    nonce and the previous hash with the 
+    //    difficulty
+
     int n = 0;
-    n = memcmp ( &buffer, &difficulty, sizeof(result) );
+    n = memcmp ( &result, &difficulty, sizeof(result) );
     eosio_assert(n > 0, "Invalid nonce!");
 
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //    Set the current time
 
     auto time_object = time_point_sec();
     uint32_t now = time_object.sec_since_epoch();
 
-    //change the latest hash
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //    Modify the currency table
+    //      - Update the block height
+    //      - Update the last hash
+    //      - Set the difficulty
+
     statstable.modify( st, 0, [&]( auto& s ) {
       s.block_height++;
-      s.time_since_last_adjustment = now;
-      if (s.block_height % 10 == 0) {
-
-      }
       s.previous_hash = result;
-      s.supply += target_token; 
+      s.supply += target_token;
+      if (s.block_height % 10 == 0) {
+        s.time_since_last_adjustment = now;
+        this->set_difficulty();
+      } 
     });
 
-
+    //Rewards the miner
     target_token.set_amount(100);
     add_balance(miner, target_token, miner); 
 }

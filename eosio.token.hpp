@@ -60,7 +60,7 @@ namespace eosio {
             account_name   	issuer;
             uint128_t         block_height = 0;
             uint32_t          time_since_last_adjustment;
-            uint32_t          difficulty[8] = {0, 0, 0, 0};
+            uint32_t          difficulty[8] = {0, 0, 0, 0, 0, 0, 0, 0};
             checksum256       previous_hash;
             uint64_t primary_key()const { return supply.symbol.name(); }
          };
