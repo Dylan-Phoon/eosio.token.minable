@@ -22,25 +22,36 @@ void token::mine( string        nonce,
 
     uint128_t difficulty = st.difficulty;
 
+    uint32_t a = 4;
+    BigInteger ssd = a;
     uint128_t difficulty_array[64];
     for (int i = 64; i >= 0; i--) {
         difficulty_array[i] = difficulty % 100;
         difficulty /= 100;
     }
 
-    string xx = "asd";
-
+    //get the previous hash and convert to string
+    string string_previous_hash;
+    uint8_t previous_hash[64];
+    for (int i = 0; i < 64; ++i) {
+      previous_hash[i] = st.previous_hash.hash[i];
+    }
+    for (uint8_t i : previous_hash) {
+      string_previous_hash += std::to_string(i);
+    }
     int hash_size = 64; //Size of the previous hash (using sha256)
     //sizeof nonce + buffer
-    char buffer[sizeof(nonce)+hash_size];
+    char buffer[nonce.length()+hash_size];
     //sets the buffer + nonce to be hashed
     for (int i = 0; i < sizeof(buffer); ++i) {
       if (i >= hash_size) {
         buffer[i] = nonce[i-hash_size];
         continue;
       }
-      buffer[i] = xx[i];
+      buffer[i] = string_previous_hash[i];
     }
+    print(nonce);
+    print(string_previous_hash[7]);
 
     //Hashes the buffer and stores it in the result
     checksum256 result;
@@ -51,7 +62,30 @@ void token::mine( string        nonce,
     int n = 0;
     n = memcmp ( &buffer, &difficulty, sizeof(result) );
     eosio_assert(n > 0, "Invalid nonce!");
-    add_balance(miner, asset(100, sym), miner); 
+
+
+    auto time_object = time_point_sec();
+    uint32_t now = time_object.sec_since_epoch();
+
+    //change the latest hash
+    statstable.modify( st, 0, [&]( auto& s ) {
+      s.block_height++;
+      s.time_since_last_adjustment = now;
+      if (s.block_height % 10 == 0) {
+
+      }
+      s.previous_hash = result;
+      s.supply += target_token; 
+    });
+
+
+    target_token.set_amount(100);
+    add_balance(miner, target_token, miner); 
+}
+
+void token::set_difficulty()
+{
+
 }
 
 void token::create( account_name issuer,

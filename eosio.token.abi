@@ -49,7 +49,10 @@
         {"name":"supply", "type":"asset"},
         {"name":"max_supply", "type":"asset"},
         {"name":"issuer", "type":"account_name"},
-        {"name":"difficulty", "type":"uint128"}
+        {"name":"block_height", "type":"uint128"},
+        {"name":"time_since_last_adjustment", "type":"uint32"},
+        {"name":"difficulty", "type":"uint32"},
+        {"name":"previous_hash", "type":"checksum256"}
       ]
     }
   ],

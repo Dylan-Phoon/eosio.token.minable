@@ -14,7 +14,6 @@
 #include <eosiolib/time.hpp>
 #include <eosiolib/contract.hpp>
 #include <eosiolib/crypto.h>
-#include <eosiolib/print.hpp>  
 #include "../biginteger-for-eosio/BigIntegerLibrary.hpp" 
 
 namespace eosiosystem {
@@ -59,12 +58,17 @@ namespace eosio {
             asset          	supply;
             asset          	max_supply;
             account_name   	issuer;
-            uint128_t		difficulty = 0x0;
+            uint128_t         block_height = 0;
+            uint32_t          time_since_last_adjustment;
+            uint32_t          difficulty[8] = {0, 0, 0, 0};
+            checksum256       previous_hash;
             uint64_t primary_key()const { return supply.symbol.name(); }
          };
 
          typedef eosio::multi_index<N(accounts), account> accounts;
          typedef eosio::multi_index<N(stat), currency_stats> stats;
+
+         void set_difficulty();
 
          void sub_balance( account_name owner, asset value );
          void add_balance( account_name owner, asset value, account_name ram_payer );
